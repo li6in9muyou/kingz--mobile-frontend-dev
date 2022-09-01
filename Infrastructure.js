@@ -12,4 +12,7 @@ export const HttpClient = new (class extends Emitter(Object) {
   }
 })();
 
-window.opp = (arg) => HttpClient.receive_opponent_move.call(HttpClient, arg);
+window.dev = {
+  opponent_move: (m) =>
+    HttpClient.receive_opponent_move.call(HttpClient, { move: m }),
+};
