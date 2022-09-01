@@ -60,7 +60,7 @@ class __GameState {
     };
 
     const results = [
-      ..._.map(_.zip(this.__state.request, this.__state.response), (pair) =>
+      ..._.map(_.zip(this.__state.response, this.__state.request), (pair) =>
         showHands(...pair)
       ),
     ];
