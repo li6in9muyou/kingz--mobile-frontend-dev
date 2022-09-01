@@ -1,21 +1,31 @@
 import { GameState } from "./GameState.js";
 import { Emitter } from "./common.js";
+import { HttpClient } from "./Infrastructure.js";
 
-export const OnlineUseCase = new (class {
+export const OnlineUseCase = new (class extends Emitter(Object) {
   _currentPlayer;
 
   get currentPlayer() {
     return this._currentPlayer;
   }
 
+  constructor() {
+    super();
+    HttpClient.subscribe("ReceiveOpponentMove", this.onReceiveOpponentMove);
+  }
+
   async request_match() {
-    new Promise((resolve) => setTimeout(resolve, 700));
+    HttpClient.do_fetch();
   }
   async register(nickname) {
-    this._currentPlayer = nickname;
-    return new Promise((resolve) => setTimeout(resolve, 1700));
+    HttpClient.do_fetch(1700, { nickname });
   }
-  sendMove(cmd) {}
+  sendMove(cmd) {
+    HttpClient.do_fetch(700, { cmd });
+  }
+  onReceiveOpponentMove(cmd) {
+    GameState.opponentMakeMove(cmd);
+  }
 })();
 
 export const PlayHistoryUseCase = new (class {
