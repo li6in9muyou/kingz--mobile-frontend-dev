@@ -1,49 +1,68 @@
 import { Emitter } from "./common.js";
+import {
+  countBy,
+  zip,
+  identity,
+  map,
+} from "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js";
 
 const GAME_CONFIG = {
-  maxAttempts: 6,
-  lowerBound: 0,
-  upperBound: 100,
+  maxRounds: 5,
+};
+const MOVES = {
+  Scissor: "s",
+  Rock: "r",
+  Paper: "p",
+};
+const ROUND_RESULT = {
+  Tie: "tie",
+  Lose: "lose",
+  Win: "win",
 };
 class __GameState extends Emitter(Object) {
-  __secret = 0;
-  __state = { attempts: 0, feedback: "" };
-  __randint(low, high) {
-    return low + Math.floor(Math.random() * (high - low));
-  }
+  __state = { request: [], response: [] };
 
   start(save) {
     if (save) {
-      switch (save.feedback) {
-        case "smaller": {
-          this.__secret = this.__randint(0, save.lastAttempt);
-          break;
-        }
-        case "bigger": {
-          this.__secret = this.__randint(save.lastAttempt, 100);
-          break;
-        }
-        default: {
-        }
-      }
       this.__state = { ...save };
-    } else {
-      this.__secret = 100 * Math.floor(Math.random());
     }
     this.emit("GameStart", { ...this.__state });
   }
 
   makeMove(cmd) {
-    this.__state.attempts += 1;
-    if (cmd.guess < this.__secret) {
-      this.emit("GameUpdate", { ...this.__state, feedback: "bigger" });
-    } else if (cmd.guess > this.__secret) {
-      this.emit("GameUpdate", { ...this.__state, feedback: "smaller" });
-    } else {
-      this.emit("GameTerminate", { ...this.__state, reason: "win" });
+    this.__state.response.push(cmd.move);
+    const results = [
+      ...map(zip(this.__state.request, this.__state.response), (m, e) =>
+        this.battle(m, e)
+      ),
+    ];
+    this.emit("GameUpdate", {
+      ...this.__state,
+      results,
+    });
+    if (results.length === GAME_CONFIG.maxRounds) {
+      if (
+        countBy(results, identity)[ROUND_RESULT.Lose] >=
+        GAME_CONFIG.maxRounds / 2 - 1
+      ) {
+        this.emit("GameTerminate", { reason: "lost" });
+      } else {
+        this.emit("GameTerminate", { reason: "win" });
+      }
     }
-    if (this.__state.attempts >= GAME_CONFIG.maxAttempts) {
-      this.emit("GameTerminate", { ...this.__state, reason: "lose" });
+  }
+
+  battle(mine, enemy) {
+    if (mine === enemy) {
+      return ROUND_RESULT.Tie;
+    } else if (
+      (mine === MOVES.Paper && enemy === MOVES.Rock) ||
+      (mine === MOVES.Rock && enemy === MOVES.Scissor) ||
+      (mine === MOVES.Scissor && enemy === MOVES.Paper)
+    ) {
+      return ROUND_RESULT.Win;
+    } else {
+      return ROUND_RESULT.Lose;
     }
   }
 }
