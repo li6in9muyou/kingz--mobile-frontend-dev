@@ -28,9 +28,8 @@ export const PlayHistoryUseCase = new (class {
   loadSavedGame() {
     return {
       nickname: "刘荣曦",
-      feedback: "bigger",
-      lastAttempt: 50,
-      attempts: 2,
+      request: ["r", "s", "r"],
+      response: ["p", "p", "s"],
     };
   }
 })();
