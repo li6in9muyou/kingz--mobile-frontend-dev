@@ -1,6 +1,26 @@
 <div id="app"></div>
+<div id="please-wait" style="visibility: hidden">
+  waiting internet requests, please wait...
+</div>
+
+<style>
+  #please-wait {
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    font-size: 5rem;
+    background-color: lightgreen;
+    color: aliceblue;
+    padding: 2rem;
+  }
+</style>
+
 <script type="module">
   import { appDiv } from "./common.js";
+  import { HttpClient } from "./Infrastructure.js";
   window.PlayUseCase = (await import("./UseCase.js")).PlayUseCase;
   window.OnlineUseCase = (await import("./UseCase.js")).OnlineUseCase;
 
@@ -48,10 +68,22 @@
          <button onclick="start_new_game_page()">start new game</button>`;
   }
 
+  const PleaseWaitPage = {
+    open() {
+      document.getElementById("please-wait").style.visibility = "visible";
+    },
+
+    close() {
+      document.getElementById("please-wait").style.visibility = "hidden";
+    },
+  };
+
   PlayUseCase.subscribe("GameStart", game_page);
   PlayUseCase.subscribe("GameUpdate", game_page);
   PlayUseCase.subscribe("GameTerminate", game_terminate_page);
   PlayUseCase.subscribe("GameSaveFound", load_game_prompt);
+  HttpClient.subscribe("StartRequest", PleaseWaitPage.open);
+  HttpClient.subscribe("DoneRequest", PleaseWaitPage.close);
   appDiv.innerHTML = `<h1>Loading</h1>`;
   PlayUseCase.boot();
 </script>
