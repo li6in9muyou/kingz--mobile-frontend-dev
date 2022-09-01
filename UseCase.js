@@ -84,6 +84,8 @@ class _PlayUseCase extends Emitter(Object) {
   boot() {
     if (PlayHistoryUseCase.hasSavedGame()) {
       this.emit("GameSaveFound", PlayHistoryUseCase.loadSavedGame());
+    } else {
+      this.emit("GameCreate");
     }
   }
 

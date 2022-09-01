@@ -93,8 +93,11 @@
   PlayUseCase.subscribe("GameUpdate", game_page);
   PlayUseCase.subscribe("GameTerminate", game_terminate_page);
   PlayUseCase.subscribe("GameSaveFound", load_game_prompt);
+  PlayUseCase.subscribe("GameCreate", start_new_game_page);
   HttpClient.subscribe("StartRequest", PleaseWaitPage.open);
   HttpClient.subscribe("DoneRequest", PleaseWaitPage.close);
   appDiv.innerHTML = `<h1>Loading</h1>`;
-  PlayUseCase.boot();
+  new Promise((resolve) => setTimeout(resolve, 1000)).then(() =>
+    PlayUseCase.boot()
+  );
 </script>
