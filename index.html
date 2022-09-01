@@ -12,9 +12,12 @@
          <input type="radio" id="move-s" name="move" value="s"><label for="move-s">scissor</label>
          <input type="radio" id="move-r" name="move" value="r"><label for="move-r">rock</label>
          <input type="radio" id="move-p" name="move" value="p"><label for="move-p">paper</label>
-         <button onclick="
-            PlayUseCase.submit_command({move:document.querySelector(input[name='move']:checked).value})
-            ">battle!</button><button>quit</button><button>save and quit</button>`;
+         <button id="move_submit">battle!</button><button>quit</button><button>save and quit</button>`;
+    document.getElementById("move_submit").addEventListener("click", () => {
+      PlayUseCase.submit_command({
+        move: document.querySelector('input[name="move"]:checked').value,
+      });
+    });
   };
 
   window.join_match_page = () => {
