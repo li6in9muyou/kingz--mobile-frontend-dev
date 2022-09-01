@@ -28,23 +28,22 @@ class __GameState {
     this._battle();
   }
 
+  #submitMove(where, cmd) {
+    if (where.length < GAME_CONFIG.maxRounds) {
+      where.push(cmd.move);
+      this._battle();
+    }
+  }
+
   makeMove(cmd) {
-    this.__state.response.push(cmd.move);
-    this._battle();
+    this.#submitMove(this.__state.response, cmd);
   }
 
   opponentMakeMove(cmd) {
-    this.__state.request.push(cmd.move);
-    this._battle();
+    this.#submitMove(this.__state.request, cmd);
   }
 
   _battle() {
-    if (this.__state.request.length > this.__state.response.length) {
-      return;
-    } else if (this.__state.request.length < this.__state.response.length) {
-      return;
-    }
-
     const showHands = (mine, enemy) => {
       if (mine === enemy) {
         return ROUND_RESULT.Tie;
@@ -60,8 +59,11 @@ class __GameState {
     };
 
     const results = [
-      ..._.map(_.zip(this.__state.response, this.__state.request), (pair) =>
-        showHands(...pair)
+      ..._.filter(
+        _.map(_.zip(this.__state.response, this.__state.request), (pair) => {
+          const [mine, enemy] = pair;
+          return mine && enemy ? showHands(mine, enemy) : null;
+        })
       ),
     ];
 
