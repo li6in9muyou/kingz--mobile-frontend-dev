@@ -1,10 +1,5 @@
 import { Emitter } from "./common.js";
-import {
-  countBy,
-  zip,
-  identity,
-  map,
-} from "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js";
+import "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js";
 
 const GAME_CONFIG = {
   maxRounds: 5,
@@ -32,7 +27,7 @@ class __GameState extends Emitter(Object) {
   makeMove(cmd) {
     this.__state.response.push(cmd.move);
     const results = [
-      ...map(zip(this.__state.request, this.__state.response), (m, e) =>
+      ..._.map(_.zip(this.__state.request, this.__state.response), (m, e) =>
         this.battle(m, e)
       ),
     ];
@@ -42,7 +37,7 @@ class __GameState extends Emitter(Object) {
     });
     if (results.length === GAME_CONFIG.maxRounds) {
       if (
-        countBy(results, identity)[ROUND_RESULT.Lose] >=
+        _.countBy(results, _.identity)[ROUND_RESULT.Lose] >=
         GAME_CONFIG.maxRounds / 2 - 1
       ) {
         this.emit("GameTerminate", { reason: "lost" });
