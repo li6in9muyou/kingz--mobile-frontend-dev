@@ -36,7 +36,7 @@
          <h3>Previous results: ${context.state.results}</h3>
          <h3>Opponent moves: ${_.join(
            context.state.request
-             .slice(0, context.state.response.length - 1)
+             .slice(0, context.state.response.length)
              .map(to_human_readable)
          )}</h3>
          <input type="radio" id="move-s" name="move" value="s"><label for="move-s">scissor</label>
