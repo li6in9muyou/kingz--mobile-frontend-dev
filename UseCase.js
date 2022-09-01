@@ -41,10 +41,6 @@ export const PlayHistoryUseCase = new (class {
     return _.countBy(this.game_saves, "type")["used"] > 0;
   }
 
-  loadSavedGame(which) {
-    return this.game_saves[which];
-  }
-
   writeSave(which, state) {
     if (0 <= which && which <= 2) {
       this.game_saves[which] = { ...state, type: "used" };
@@ -90,11 +86,15 @@ class _PlayUseCase extends Emitter(Object) {
   }
 
   load_game(which) {
-    const { nickname, state } = PlayHistoryUseCase.loadSavedGame(which);
-    OnlineUseCase.register(nickname).then(() => {
-      GameState.start(state);
-      this.emit("GameStart", this.game_state);
-    });
+    const { type, nickname, state } = PlayHistoryUseCase.readSave(which);
+    if (type !== "empty") {
+      OnlineUseCase.register(nickname).then(() => {
+        GameState.start(state);
+        this.emit("GameStart", this.game_state);
+      });
+    } else {
+      this.emit("GameCreate");
+    }
   }
 
   boot() {
