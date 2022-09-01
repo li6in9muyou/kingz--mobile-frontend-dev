@@ -19,15 +19,24 @@
 </style>
 
 <script type="module">
+  import "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js";
   import { appDiv } from "./common.js";
   import { HttpClient } from "./Infrastructure.js";
   window.PlayUseCase = (await import("./UseCase.js")).PlayUseCase;
   window.OnlineUseCase = (await import("./UseCase.js")).OnlineUseCase;
 
   window.game_page = (context) => {
+    let to_human_readable = (ch) =>
+      ({ p: "paper", s: "scissor", r: "rock" }[ch]);
     appDiv.innerHTML = `<h1>Game started, pick your move:</h1>
-         <h2>Played as ${context.nickname ?? "Guest"},
-             history: ${JSON.stringify(context)}</h2>
+         <h2>Played as ${context.nickname ?? "Guest"}</h2>
+         <h3>Previous moves: ${_.join(
+           context.state.response.map(to_human_readable)
+         )}</h3>
+         <h3>Previous results: ${context.state.results}</h3>
+         <h3>Opponent moves: ${_.join(
+           context.state.request.map(to_human_readable)
+         )}</h3>
          <input type="radio" id="move-s" name="move" value="s"><label for="move-s">scissor</label>
          <input type="radio" id="move-r" name="move" value="r"><label for="move-r">rock</label>
          <input type="radio" id="move-p" name="move" value="p"><label for="move-p">paper</label>
