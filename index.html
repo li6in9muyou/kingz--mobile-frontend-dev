@@ -6,15 +6,15 @@
   window.OnlineUseCase = (await import("./UseCase.js")).OnlineUseCase;
 
   window.game_page = (context) => {
-    appDiv.innerHTML = `<h1>Game started, guess a number:</h1>
+    appDiv.innerHTML = `<h1>Game started, pick your move:</h1>
          <h2>Played as ${context.nickname ?? "Guest"},
-             attempts: ${context.attempts}/${context.maxAttempts}</h2>
-         <input type="number"
-                min="0" max="100"
-                value="${context.lastAttempt}" id="guess">
+             history: ${JSON.stringify(context)}</h2>
+         <input type="radio" id="move-s" name="move" value="s"><label for="move-s">scissor</label>
+         <input type="radio" id="move-r" name="move" value="r"><label for="move-r">rock</label>
+         <input type="radio" id="move-p" name="move" value="p"><label for="move-p">paper</label>
          <button onclick="
-            PlayUseCase.submit_command({guess:document.getElementById('guess').value})
-            ">check my guess</button><button>quit</button><button>save and quit</button>`;
+            PlayUseCase.submit_command({move:document.querySelector(input[name='move']:checked).value})
+            ">battle!</button><button>quit</button><button>save and quit</button>`;
   };
 
   window.join_match_page = () => {
