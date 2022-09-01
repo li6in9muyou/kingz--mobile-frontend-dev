@@ -42,7 +42,9 @@
          <input type="radio" id="move-s" name="move" value="s"><label for="move-s">scissor</label>
          <input type="radio" id="move-r" name="move" value="r"><label for="move-r">rock</label>
          <input type="radio" id="move-p" name="move" value="p"><label for="move-p">paper</label>
-         <button id="move_submit">battle!</button><button>quit</button><button>save and quit</button>`;
+         <button id="move_submit">battle!</button>
+         <button>quit</button>
+         <button onclick="PlayUseCase.select_save_slot('Save current game', PlayUseCase.save)">save and quit</button>`;
     document.getElementById("move_submit").addEventListener("click", () => {
       PlayUseCase.submit_command({
         move: document.querySelector('input[name="move"]:checked').value,
@@ -73,12 +75,6 @@
          <button onclick="start_new_game_page()">restart</button>`;
   };
 
-  function load_game_prompt(context) {
-    appDiv.innerHTML = `<h1>Save is found, played as ${context.nickname}</h1>
-         <button onclick="PlayUseCase.load_game()">load this game</button>
-         <button onclick="start_new_game_page()">start new game</button>`;
-  }
-
   const PleaseWaitPage = {
     open() {
       document.getElementById("please-wait").style.visibility = "visible";
@@ -89,11 +85,29 @@
     },
   };
 
+  function save_slot_select(context) {
+    appDiv.innerHTML = `<h1>${context.intent}</h1>
+         <h2>Select a save slot</h2>
+         <h2>${context.slots.map((s) =>
+           s.type === "empty" ? "[ ]" : `[ ${s.nickname} ]`
+         )}</h2>
+         <label for="save-slot">enter slot number</label>
+         <input type="number" id="save-slot" min="1" max="3" value="1">
+         <button id="save-slot-confirm">confirm</button>
+         <button onclick="start_new_game_page()">start new game</button>`;
+    document
+      .getElementById("save-slot-confirm")
+      .addEventListener("click", () => {
+        context.next(document.getElementById("save-slot").value - 1);
+      });
+  }
+
   PlayUseCase.subscribe("GameStart", game_page);
   PlayUseCase.subscribe("GameUpdate", game_page);
   PlayUseCase.subscribe("GameTerminate", game_terminate_page);
-  PlayUseCase.subscribe("GameSaveFound", load_game_prompt);
+  PlayUseCase.subscribe("GameSaveFound", save_slot_select);
   PlayUseCase.subscribe("GameCreate", start_new_game_page);
+  PlayUseCase.subscribe("SaveSlotSelect", save_slot_select);
   HttpClient.subscribe("StartRequest", PleaseWaitPage.open);
   HttpClient.subscribe("DoneRequest", PleaseWaitPage.close);
   appDiv.innerHTML = `<h1>Loading</h1>`;

@@ -1,6 +1,7 @@
 import { GameState } from "./GameState.js";
 import { Emitter } from "./common.js";
 import { HttpClient } from "./Infrastructure.js";
+import "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js";
 
 export const OnlineUseCase = new (class extends Emitter(Object) {
   _currentPlayer;
@@ -30,20 +31,35 @@ export const OnlineUseCase = new (class extends Emitter(Object) {
 })();
 
 export const PlayHistoryUseCase = new (class {
-  game_saves = [];
+  game_saves;
 
-  hasSavedGame() {
-    return true;
+  constructor() {
+    this.game_saves = JSON.parse(localStorage.getItem("SRP_saves")) ?? [];
   }
 
-  loadSavedGame() {
+  hasSavedGame() {
+    return _.countBy(this.game_saves, "type")["used"] > 0;
+  }
+
+  loadSavedGame(which) {
+    return this.game_saves[which];
+  }
+
+  writeSave(which, state) {
+    if (0 <= which && which <= 2) {
+      this.game_saves[which] = { ...state, type: "used" };
+      localStorage.setItem("SRP_saves", JSON.stringify(this.game_saves));
+    }
+  }
+
+  readSave(which) {
+    this.game_saves = JSON.parse(localStorage.getItem("SRP_saves")) ?? [];
     return {
-      nickname: "刘荣曦",
-      state: {
-        request: ["r", "s", "r"],
-        response: ["p", "s", "s"],
-        maxRounds: 5,
-      },
+      ...(this.game_saves[which] ?? {
+        type: "empty",
+        nickname: "",
+        game_state: {},
+      }),
     };
   }
 })();
@@ -73,8 +89,8 @@ class _PlayUseCase extends Emitter(Object) {
     }
   }
 
-  load_game() {
-    const { nickname, state } = PlayHistoryUseCase.loadSavedGame();
+  load_game(which) {
+    const { nickname, state } = PlayHistoryUseCase.loadSavedGame(which);
     OnlineUseCase.register(nickname).then(() => {
       GameState.start(state);
       this.emit("GameStart", this.game_state);
@@ -83,7 +99,11 @@ class _PlayUseCase extends Emitter(Object) {
 
   boot() {
     if (PlayHistoryUseCase.hasSavedGame()) {
-      this.emit("GameSaveFound", PlayHistoryUseCase.loadSavedGame());
+      this.emit("SystemNotification", {
+        level: "info",
+        msg: "Game saves are found.",
+      });
+      this.select_save_slot("Game saves are found", this.load_game);
     } else {
       this.emit("GameCreate");
     }
@@ -94,6 +114,24 @@ class _PlayUseCase extends Emitter(Object) {
       GameState.start();
       this.emit("GameStart", this.game_state);
     });
+  }
+
+  select_save_slot(intent, next) {
+    this.emit("SaveSlotSelect", {
+      slots: [
+        PlayHistoryUseCase.readSave(0),
+        PlayHistoryUseCase.readSave(1),
+        PlayHistoryUseCase.readSave(2),
+      ],
+      next: (w) => next.call(this, w),
+      intent,
+    });
+  }
+
+  save(which) {
+    PlayHistoryUseCase.writeSave(which, this.game_state);
+    this.emit("SystemNotification", { level: "info", msg: "game is saved" });
+    this.emit("GameCreate");
   }
 }
 
