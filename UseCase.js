@@ -73,14 +73,12 @@ class _PlayUseCase extends Emitter(Object) {
     }
   }
 
-  start_game() {
-    GameState.start();
-    this.emit("GameStart", this.game_state);
-  }
-
   load_game() {
     const { nickname, state } = PlayHistoryUseCase.loadSavedGame();
-    OnlineUseCase.register(nickname).then(() => this.start_game(state));
+    OnlineUseCase.register(nickname).then(() => {
+      GameState.start(state);
+      this.emit("GameStart", this.game_state);
+    });
   }
 
   boot() {
@@ -90,7 +88,10 @@ class _PlayUseCase extends Emitter(Object) {
   }
 
   start_new_game(nickname) {
-    OnlineUseCase.register(nickname).then(() => this.start_game());
+    OnlineUseCase.register(nickname).then(() => {
+      GameState.start();
+      this.emit("GameStart", this.game_state);
+    });
   }
 }
 

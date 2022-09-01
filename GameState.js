@@ -25,20 +25,20 @@ class __GameState {
     if (save) {
       this.__state = { ...this.__state, ...save };
     }
-    this.battle();
+    this._battle();
   }
 
   makeMove(cmd) {
     this.__state.response.push(cmd.move);
-    this.battle();
+    this._battle();
   }
 
   opponentMakeMove(cmd) {
     this.__state.request.push(cmd.move);
-    this.battle();
+    this._battle();
   }
 
-  battle() {
+  _battle() {
     if (this.__state.request.length > this.__state.response.length) {
       return;
     } else if (this.__state.request.length < this.__state.response.length) {
