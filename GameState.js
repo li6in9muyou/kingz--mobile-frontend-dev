@@ -47,7 +47,7 @@ class __GameState extends Emitter(Object) {
       return;
     }
 
-    const battle = (mine, enemy) => {
+    const showHands = (mine, enemy) => {
       if (mine === enemy) {
         return ROUND_RESULT.Tie;
       } else if (
@@ -62,7 +62,9 @@ class __GameState extends Emitter(Object) {
     };
 
     const results = [
-      ..._.map(_.zip(this.__state.request, this.__state.response), battle),
+      ..._.map(_.zip(this.__state.request, this.__state.response), (pair) =>
+        showHands(...pair)
+      ),
     ];
 
     this.__state = { ...this.__state, results };
@@ -76,6 +78,8 @@ class __GameState extends Emitter(Object) {
       } else {
         this.emit("GameTerminate", { reason: "win" });
       }
+    } else {
+      this.emit("GameUpdate", { ...this.__state });
     }
   }
 }
