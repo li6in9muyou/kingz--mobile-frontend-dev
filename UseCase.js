@@ -29,7 +29,7 @@ export const PlayHistoryUseCase = new (class {
     return {
       nickname: "刘荣曦",
       request: ["r", "s", "r"],
-      response: ["p", "p", "s"],
+      response: ["p", "s", "s"],
     };
   }
 })();
