@@ -2,7 +2,7 @@
 <script type="module">
   import { appDiv } from "./common.js";
   import { GameState } from "./GameState.js";
-  window.GameUseCase = (await import("./UseCase.js")).PlayUseCase;
+  window.PlayUseCase = (await import("./UseCase.js")).PlayUseCase;
   window.OnlineUseCase = (await import("./UseCase.js")).OnlineUseCase;
 
   window.game_page = (context) => {
@@ -21,12 +21,12 @@
     appDiv.innerHTML = `<h1>matching</h1>`;
     OnlineUseCase.request_match().then(() => {
       appDiv.innerHTML = `<h1>found match!</h1>`;
-      GameUseCase.start_game();
+      PlayUseCase.start_game();
     });
   };
 
   window.submit_nickname = () => {
-    GameUseCase.start_new_game(document.getElementById("nickname").value);
+    PlayUseCase.start_new_game(document.getElementById("nickname").value);
   };
 
   window.start_new_game_page = () => {
@@ -49,7 +49,7 @@
   GameState.subscribe("GameStart", game_page);
   GameState.subscribe("GameUpdate", game_page);
   GameState.subscribe("GameTerminate", game_terminate_page);
-  GameUseCase.subscribe("GameSaveFound", load_game_prompt);
+  PlayUseCase.subscribe("GameSaveFound", load_game_prompt);
   appDiv.innerHTML = `<h1>Loading</h1>`;
-  GameUseCase.boot();
+  PlayUseCase.boot();
 </script>
