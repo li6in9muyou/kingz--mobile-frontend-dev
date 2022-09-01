@@ -75,13 +75,11 @@ class __GameState {
   }
 
   shouldTerminate() {
-    const lostCnt = _.countBy(this.__state.results, _.identity)[
+    const lostRoundsCnt = _.countBy(this.__state.results, _.identity)[
       ROUND_RESULT.Lose
     ];
-    const lostGame =
-      this.__state.results.length === GAME_CONFIG.maxRounds &&
-      lostCnt >= GAME_CONFIG.maxRounds / 2 - 1;
-    return { shouldTerminate: lostGame, reason: lostGame ? "lost" : "win" };
+    const gameIsLost = lostRoundsCnt >= Math.ceil(GAME_CONFIG.maxRounds / 2);
+    return { shouldTerminate: gameIsLost, reason: gameIsLost ? "lost" : "win" };
   }
 }
 
