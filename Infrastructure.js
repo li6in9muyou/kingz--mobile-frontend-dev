@@ -1,10 +1,10 @@
 import { Emitter } from "./common.js";
 
 export const HttpClient = new (class extends Emitter(Object) {
-  do_fetch(wait = 700, data = {}) {
+  async do_fetch(wait = 700, data = {}) {
     console.log("HttpClient fetch with data:", data);
     this.emit("StartRequest");
-    new Promise((resolve) => setTimeout(resolve, wait));
+    await new Promise((resolve) => setTimeout(resolve, wait));
     this.emit("DoneRequest");
   }
   receive_opponent_move(move) {

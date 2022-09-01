@@ -1,4 +1,3 @@
-import { Emitter } from "./common.js";
 import "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js";
 
 const GAME_CONFIG = {
@@ -14,7 +13,7 @@ const ROUND_RESULT = {
   Lose: "lose",
   Win: "win",
 };
-class __GameState extends Emitter(Object) {
+class __GameState {
   __state = {
     request: [],
     response: [],
@@ -27,7 +26,6 @@ class __GameState extends Emitter(Object) {
       this.__state = { ...this.__state, ...save };
     }
     this.battle();
-    this.emit("GameStart", { ...this.__state });
   }
 
   makeMove(cmd) {
@@ -68,19 +66,20 @@ class __GameState extends Emitter(Object) {
     ];
 
     this.__state = { ...this.__state, results };
+  }
 
-    if (results.length === GAME_CONFIG.maxRounds) {
-      if (
-        _.countBy(results, _.identity)[ROUND_RESULT.Lose] >=
-        GAME_CONFIG.maxRounds / 2 - 1
-      ) {
-        this.emit("GameTerminate", { reason: "lost" });
-      } else {
-        this.emit("GameTerminate", { reason: "win" });
-      }
-    } else {
-      this.emit("GameUpdate", { ...this.__state });
-    }
+  get state() {
+    return { ...this.__state };
+  }
+
+  shouldTerminate() {
+    const lostCnt = _.countBy(this.__state.results, _.identity)[
+      ROUND_RESULT.Lose
+    ];
+    const lostGame =
+      this.__state.results.length === GAME_CONFIG.maxRounds &&
+      lostCnt >= GAME_CONFIG.maxRounds / 2 - 1;
+    return { shouldTerminate: lostGame, reason: lostGame ? "lost" : "win" };
   }
 }
 

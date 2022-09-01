@@ -15,16 +15,17 @@ export const OnlineUseCase = new (class extends Emitter(Object) {
   }
 
   async request_match() {
-    HttpClient.do_fetch();
+    await HttpClient.do_fetch();
   }
   async register(nickname) {
-    HttpClient.do_fetch(1700, { nickname });
+    await HttpClient.do_fetch(1700, { nickname });
+    this._currentPlayer = nickname;
   }
-  sendMove(cmd) {
-    HttpClient.do_fetch(700, { cmd });
+  async sendMove(cmd) {
+    await HttpClient.do_fetch(700, { cmd });
   }
   onReceiveOpponentMove(cmd) {
-    GameState.opponentMakeMove(cmd);
+    PlayUseCase.opponent_command(cmd);
   }
 })();
 
@@ -38,24 +39,48 @@ export const PlayHistoryUseCase = new (class {
   loadSavedGame() {
     return {
       nickname: "刘荣曦",
-      request: ["r", "s", "r"],
-      response: ["p", "s", "s"],
+      state: {
+        request: ["r", "s", "r"],
+        response: ["p", "s", "s"],
+        maxRounds: 5,
+      },
     };
   }
 })();
 
 class _PlayUseCase extends Emitter(Object) {
+  get game_state() {
+    return { nickname: OnlineUseCase.currentPlayer, state: GameState.state };
+  }
+
   submit_command(cmd) {
     GameState.makeMove(cmd);
+    this.emit("GameUpdate", this.game_state);
+    this.post_command();
     OnlineUseCase.sendMove(cmd);
+  }
+
+  opponent_command(cmd) {
+    GameState.opponentMakeMove(cmd);
+    this.emit("GameUpdate", this.game_state);
+    this.post_command();
+  }
+
+  post_command() {
+    const { shouldTerminate, reason } = GameState.shouldTerminate();
+    if (shouldTerminate) {
+      this.emit("GameTerminate", { reason });
+    }
   }
 
   start_game() {
     GameState.start();
+    this.emit("GameStart", this.game_state);
   }
 
   load_game() {
-    GameState.start(PlayHistoryUseCase.loadSavedGame());
+    const { nickname, state } = PlayHistoryUseCase.loadSavedGame();
+    OnlineUseCase.register(nickname).then(() => this.start_game(state));
   }
 
   boot() {

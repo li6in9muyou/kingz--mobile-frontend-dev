@@ -1,7 +1,6 @@
 <div id="app"></div>
 <script type="module">
   import { appDiv } from "./common.js";
-  import { GameState } from "./GameState.js";
   window.PlayUseCase = (await import("./UseCase.js")).PlayUseCase;
   window.OnlineUseCase = (await import("./UseCase.js")).OnlineUseCase;
 
@@ -49,9 +48,9 @@
          <button onclick="start_new_game_page()">start new game</button>`;
   }
 
-  GameState.subscribe("GameStart", game_page);
-  GameState.subscribe("GameUpdate", game_page);
-  GameState.subscribe("GameTerminate", game_terminate_page);
+  PlayUseCase.subscribe("GameStart", game_page);
+  PlayUseCase.subscribe("GameUpdate", game_page);
+  PlayUseCase.subscribe("GameTerminate", game_terminate_page);
   PlayUseCase.subscribe("GameSaveFound", load_game_prompt);
   appDiv.innerHTML = `<h1>Loading</h1>`;
   PlayUseCase.boot();
